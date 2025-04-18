@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GitHub Flow Generator</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 2rem;
+      background: #1e1e2f;
+      color: #f5f5f5;
+    }
+    h1 {
+      color: #FFA22A;
+      margin-bottom: 1rem;
+    }
+    label {
+      display: block;
+      margin-top: 1rem;
+      font-weight: bold;
+    }
+    input, select {
+      width: 100%;
+      padding: 0.5rem;
+      margin-top: 0.5rem;
+      border: none;
+      border-radius: 5px;
+      background: #2c2c3e;
+      color: #fff;
+    }
+    button {
+      margin-top: 1.5rem;
+      padding: 0.75rem 1.5rem;
+      background-color: #4F3F84;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    pre {
+      background: #2c2c3e;
+      padding: 1rem;
+      border-radius: 10px;
+      white-space: pre-wrap;
+      margin-top: 2rem;
+      position: relative;
+    }
+    .copy-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #008d68;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 0.3rem 0.6rem;
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+    #commandOutput {
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>GitHub Flow Generator 🌿</h1>
+  <form id="gitForm">
+    <label for="sshUser">👤 Cuenta SSH (ej: mariano):</label>
+    <input type="text" id="sshUser" placeholder="mariano" required>
+
+    <label for="repo">📁 Ruta del repositorio (ej: ASI0729-Final-Project/docs.git):</label>
+    <input type="text" id="repo" required>
+
+    <label for="commitType">📦 Tipo de Commit (Conventional Commit):</label>
+    <select id="commitType" required>
+      <option value="feat">feat</option>
+      <option value="fix">fix</option>
+      <option value="docs">docs</option>
+      <option value="style">style</option>
+      <option value="refactor">refactor</option>
+      <option value="test">test</option>
+      <option value="chore">chore</option>
+    </select>
+
+    <label for="issue">📝 Nombre de la issue (ej: Fix capítulo 1 #89):</label>
+    <input type="text" id="issue" required>
+
+    <button type="submit">Generar comandos</button>
+  </form>
+
+  <div id="commandOutput"></div>
+
+  <script>
+    function formatIssueName(issueText) {
+      const match = issueText.match(/(.+?)\s+#(\d+)/);
+      if (!match) return { descripcion: '', numero: '' };
+      return {
+        descripcion: match[1].trim().toLowerCase().replace(/\s+/g, '-'),
+        numero: match[2]
+      };
+    }
+
+    function generateCommandBox(text) {
+      const pre = document.createElement('pre');
+      const button = document.createElement('button');
+      button.textContent = '📋 Copiar';
+      button.className = 'copy-btn';
+      button.onclick = function () {
+        navigator.clipboard.writeText(text).then(() => alert("📋 ¡Comando copiado!"));
+      };
+      pre.textContent = text;
+      pre.appendChild(button);
+      return pre;
+    }
+
+    document.getElementById('gitForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      const sshUser = document.getElementById('sshUser').value.trim();
+      const repoPath = document.getElementById('repo').value.trim();
+      const issueText = document.getElementById('issue').value.trim();
+      const commitType = document.getElementById('commitType').value;
+
+      const { descripcion, numero } = formatIssueName(issueText);
+      const branchName = `${commitType}/${numero}-${descripcion}`;
+      const fullRepoUrl = `git@github.com-${sshUser}:${repoPath}`;
+
+      const comandos = [
+        `git clone ${fullRepoUrl}`,
+        `cd nombre-repo`,
+        `git checkout main`,
+        `git pull origin main`,
+        `git checkout -b ${branchName}`,
+        `# 🚧 Edita tu código...`,
+        `git add .`,
+        `git commit -m "${commitType}: ${descripcion}"`,
+        `git push -u origin ${branchName}`,
+        `git checkout main`,
+        `git pull origin main`,
+        `git checkout ${branchName}`,
+        `git merge main`,
+        `git add .`,
+        `git commit -m "chore: merge main into ${branchName}"`,
+        `git push`,
+        `# PR: ${commitType}: ${descripcion} #${numero}`,
+        `# Closes #${numero}`,
+        `git checkout main`,
+        `git pull origin main`,
+        `git branch -d ${branchName}`,
+        <!-- `git push origin --delete ${branchName}` -->
+      ];
+
+      const output = document.getElementById('commandOutput');
+      output.innerHTML = '';
+      comandos.forEach(cmd => output.appendChild(generateCommandBox(cmd)));
+    });
+  </script>
+</body>
+</html>
