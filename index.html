@@ -58,9 +58,6 @@
       cursor: pointer;
       font-size: 0.8rem;
     }
-    #commandOutput {
-      margin-top: 1rem;
-    }
   </style>
 </head>
 <body>
@@ -69,8 +66,11 @@
     <label for="sshUser">👤 Cuenta SSH (ej: mariano):</label>
     <input type="text" id="sshUser" placeholder="mariano" required>
 
-    <label for="repo">📁 Ruta del repositorio (ej: ASI0729-Final-Project/docs.git):</label>
+    <label for="repo">📁 Ruta del repositorio (solo parte final, ej: ASI0729-Final-Project/docs.git):</label>
     <input type="text" id="repo" required>
+
+    <label for="repoName">📂 Nombre del repositorio (para usar en cd):</label>
+    <input type="text" id="repoName" required>
 
     <label for="commitType">📦 Tipo de Commit (Conventional Commit):</label>
     <select id="commitType" required>
@@ -89,7 +89,7 @@
     <button type="submit">Generar comandos</button>
   </form>
 
-  <div id="commandOutput"></div>
+  <div id="output"></div>
 
   <script>
     function formatIssueName(issueText) {
@@ -101,23 +101,26 @@
       };
     }
 
-    function generateCommandBox(text) {
+    function createCommandBox(command) {
       const pre = document.createElement('pre');
       const button = document.createElement('button');
-      button.textContent = '📋 Copiar';
       button.className = 'copy-btn';
-      button.onclick = function () {
-        navigator.clipboard.writeText(text).then(() => alert("📋 ¡Comando copiado!"));
+      button.textContent = '📋 Copiar';
+      button.onclick = () => {
+        navigator.clipboard.writeText(command).then(() => {
+          alert('📋 ¡Comando copiado!');
+        });
       };
-      pre.textContent = text;
+      pre.textContent = command;
       pre.appendChild(button);
       return pre;
     }
 
-    document.getElementById('gitForm').addEventListener('submit', function (e) {
+    document.getElementById('gitForm').addEventListener('submit', function(e) {
       e.preventDefault();
       const sshUser = document.getElementById('sshUser').value.trim();
-      const repoPath = document.getElementById('repo').value.trim();
+      const repoPath = document.getElementById('repo').value.trim().replace(/^git@github.com[:\-]/, '');
+      const repoName = document.getElementById('repoName').value.trim();
       const issueText = document.getElementById('issue').value.trim();
       const commitType = document.getElementById('commitType').value;
 
@@ -125,9 +128,9 @@
       const branchName = `${commitType}/${numero}-${descripcion}`;
       const fullRepoUrl = `git@github.com-${sshUser}:${repoPath}`;
 
-      const comandos = [
+      const commands = [
         `git clone ${fullRepoUrl}`,
-        `cd nombre-repo`,
+        `cd ${repoName}`,
         `git checkout main`,
         `git pull origin main`,
         `git checkout -b ${branchName}`,
@@ -139,20 +142,22 @@
         `git pull origin main`,
         `git checkout ${branchName}`,
         `git merge main`,
+        `# Resolver conflictos si hay, luego:`,
         `git add .`,
         `git commit -m "chore: merge main into ${branchName}"`,
         `git push`,
-        `# PR: ${commitType}: ${descripcion} #${numero}`,
-        `# Closes #${numero}`,
+        `# Crear el Pull Request en GitHub`,
+        `# Título: ${commitType}: ${descripcion} #${numero}`,
+        `# Descripción: Closes #${numero}`,
         `git checkout main`,
         `git pull origin main`,
         `git branch -d ${branchName}`,
-        <!-- `git push origin --delete ${branchName}` -->
+        `git push origin --delete ${branchName}`
       ];
 
-      const output = document.getElementById('commandOutput');
-      output.innerHTML = '';
-      comandos.forEach(cmd => output.appendChild(generateCommandBox(cmd)));
+      const outputDiv = document.getElementById('output');
+      outputDiv.innerHTML = '';
+      commands.forEach(cmd => outputDiv.appendChild(createCommandBox(cmd)));
     });
   </script>
 </body>
