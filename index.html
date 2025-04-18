@@ -38,14 +38,19 @@
       border-radius: 8px;
       cursor: pointer;
     }
-    pre {
-      background: #2c2c3e;
-      padding: 1rem;
-      border-radius: 10px;
-      white-space: pre-wrap;
-      margin-top: 2rem;
-      position: relative;
-    }
+   pre {
+  background: #2c2c3e;
+  padding: 1rem;
+  border-radius: 10px;
+  white-space: pre-wrap;
+  margin-top: 2rem;
+  position: relative;
+  transition: background-color 1s ease;
+}
+
+pre.copiado {
+  background-color: #008d68;
+}
     .copy-btn {
       position: absolute;
       top: 10px;
@@ -106,20 +111,29 @@
   const button = document.createElement('button');
   button.className = 'copy-btn';
   button.textContent = '📋 Copiar';
+
   button.onclick = () => {
     navigator.clipboard.writeText(command).then(() => {
-      // alert('📋 ¡Comando copiado!');
-      // Aquí puedes poner algo más sutil si quieres, como cambiar el texto del botón:
+      // Remover la clase "copiado" de todos los <pre>
+      document.querySelectorAll('pre').forEach(p => p.classList.remove('copiado'));
+
+      // Agregar clase al actual
+      pre.classList.add('copiado');
+
+      // También feedback en el botón
       button.textContent = '✅ Copiado';
       setTimeout(() => {
         button.textContent = '📋 Copiar';
-      }, 2000);
+        pre.classList.remove('copiado'); // Volver al color original
+      }, 1000); // 1 segundo
     });
   };
+
   pre.textContent = command;
   pre.appendChild(button);
   return pre;
 }
+
 
 
     document.getElementById('gitForm').addEventListener('submit', function(e) {
