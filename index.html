@@ -45,7 +45,7 @@
       white-space: pre-wrap;
       margin-top: 2rem;
       position: relative;
-      transition: background-color 7s ease;
+      transition: background-color 1s ease;
     }
     pre.copiado {
       background-color: #008d68;
@@ -144,6 +144,8 @@
         `git push origin --delete ${branchName}`
       ];
 
+      
+
       const outputDiv = document.getElementById('output');
       outputDiv.innerHTML = '';
 
@@ -166,7 +168,7 @@
               setTimeout(() => {
                 button.textContent = '📋 Copiar';
                 pre.classList.remove('copiado');
-              }, 1000);
+              }, 20000);
             });
           };
 
