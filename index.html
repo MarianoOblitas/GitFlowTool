@@ -38,19 +38,18 @@
       border-radius: 8px;
       cursor: pointer;
     }
-   pre {
-  background: #2c2c3e;
-  padding: 1rem;
-  border-radius: 10px;
-  white-space: pre-wrap;
-  margin-top: 2rem;
-  position: relative;
-  transition: background-color 7s ease;
-}
-
-pre.copiado {
-  background-color: #008d68;
-}
+    pre {
+      background: #2c2c3e;
+      padding: 1rem;
+      border-radius: 10px;
+      white-space: pre-wrap;
+      margin-top: 2rem;
+      position: relative;
+      transition: background-color 7s ease;
+    }
+    pre.copiado {
+      background-color: #008d68;
+    }
     .copy-btn {
       position: absolute;
       top: 10px;
@@ -106,36 +105,6 @@ pre.copiado {
       };
     }
 
-    function createCommandBox(command) {
-  const pre = document.createElement('pre');
-  const button = document.createElement('button');
-  button.className = 'copy-btn';
-  button.textContent = '📋 Copiar';
-
-  button.onclick = () => {
-    navigator.clipboard.writeText(command).then(() => {
-      // Remover la clase "copiado" de todos los <pre>
-      document.querySelectorAll('pre').forEach(p => p.classList.remove('copiado'));
-
-      // Agregar clase al actual
-      pre.classList.add('copiado');
-
-      // También feedback en el botón
-      button.textContent = '✅ Copiado';
-      setTimeout(() => {
-        button.textContent = '📋 Copiar';
-        pre.classList.remove('copiado'); // Volver al color original
-      }, 1000); // 1 segundo
-    });
-  };
-
-  pre.textContent = command;
-  pre.appendChild(button);
-  return pre;
-}
-
-
-
     document.getElementById('gitForm').addEventListener('submit', function(e) {
       e.preventDefault();
       const sshUser = document.getElementById('sshUser').value.trim();
@@ -177,7 +146,36 @@ pre.copiado {
 
       const outputDiv = document.getElementById('output');
       outputDiv.innerHTML = '';
-      commands.forEach(cmd => outputDiv.appendChild(createCommandBox(cmd)));
+
+      commands.forEach(cmd => {
+        const pre = document.createElement('pre');
+
+        if (cmd.trim().startsWith('#')) {
+          pre.textContent = cmd;
+        } else {
+          const button = document.createElement('button');
+          button.className = 'copy-btn';
+          button.textContent = '📋 Copiar';
+
+          button.onclick = () => {
+            navigator.clipboard.writeText(cmd).then(() => {
+              document.querySelectorAll('pre').forEach(p => p.classList.remove('copiado'));
+              pre.classList.add('copiado');
+
+              button.textContent = '✅ Copiado';
+              setTimeout(() => {
+                button.textContent = '📋 Copiar';
+                pre.classList.remove('copiado');
+              }, 1000);
+            });
+          };
+
+          pre.textContent = cmd;
+          pre.appendChild(button);
+        }
+
+        outputDiv.appendChild(pre);
+      });
     });
   </script>
 </body>
