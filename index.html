@@ -102,19 +102,25 @@
     }
 
     function createCommandBox(command) {
-      const pre = document.createElement('pre');
-      const button = document.createElement('button');
-      button.className = 'copy-btn';
-      button.textContent = '📋 Copiar';
-      button.onclick = () => {
-        navigator.clipboard.writeText(command).then(() => {
-          alert('📋 ¡Comando copiado!');
-        });
-      };
-      pre.textContent = command;
-      pre.appendChild(button);
-      return pre;
-    }
+  const pre = document.createElement('pre');
+  const button = document.createElement('button');
+  button.className = 'copy-btn';
+  button.textContent = '📋 Copiar';
+  button.onclick = () => {
+    navigator.clipboard.writeText(command).then(() => {
+      // alert('📋 ¡Comando copiado!');
+      // Aquí puedes poner algo más sutil si quieres, como cambiar el texto del botón:
+      button.textContent = '✅ Copiado';
+      setTimeout(() => {
+        button.textContent = '📋 Copiar';
+      }, 2000);
+    });
+  };
+  pre.textContent = command;
+  pre.appendChild(button);
+  return pre;
+}
+
 
     document.getElementById('gitForm').addEventListener('submit', function(e) {
       e.preventDefault();
